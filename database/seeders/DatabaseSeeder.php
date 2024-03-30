@@ -20,16 +20,20 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        DB::table('roles')->insert([
-            ['name' => 'Admin'],
-            ['name' => 'Manager'],
-        ]);
+        // DB::table('roles')->insert([
+        //     ['name' => 'Admin'],
+        //     ['name' => 'Manager'],
+        // ]);
 
-        DB::table('role_user')->insert([
-            [
-                'role_id' => 1,
-                'user_id' => 1,
-            ],
-        ]);
+        // DB::table('role_user')->insert([
+        //     [
+        //         'role_id' => 1,
+        //         'user_id' => 1,
+        //     ],
+        // ]);
+
+        // \App\Models\Supplier::factory(2)->create();
+        \App\Models\Product::factory(10)->create();
+        \App\Models\Category::factory(10)->create();
     }
 }
