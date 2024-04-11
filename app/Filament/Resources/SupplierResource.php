@@ -39,7 +39,7 @@ class SupplierResource extends Resource
                             ->columnSpanFull(),
 
                         Forms\Components\RichEditor::make('description')
-                            ->fileAttachmentsDirectory('suppliers-file')
+                            ->fileAttachmentsDirectory('suppliers-attachments')
                             ->columnSpanFull(),
                     ])
                     ->columns(2)
