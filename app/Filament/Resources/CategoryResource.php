@@ -30,7 +30,7 @@ class CategoryResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->live()
+                    ->live(onBlur: true)
                     ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
                         if (($get('slug') ?? '') !== Str::slug($old)) {
                             return;
@@ -38,9 +38,13 @@ class CategoryResource extends Resource
                         $set('slug', Str::slug($state));
                     })
                     ->maxLength(255),
+
                 Forms\Components\TextInput::make('slug')
+                    ->disabled()
+                    ->dehydrated()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(Category::class, 'slug', ignoreRecord: true),
             ]);
     }
 
