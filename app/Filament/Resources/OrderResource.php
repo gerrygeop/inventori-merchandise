@@ -31,6 +31,15 @@ class OrderResource extends Resource
             ->schema([
                 Forms\Components\Section::make()
                     ->schema([
+                        Forms\Components\DateTimePicker::make('order_date')
+                            ->default(now())
+                            ->hidden()
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->timezone('Asia/Singapore')
+                            ->required()
+                            ->columnSpanFull(),
+
                         Forms\Components\Select::make('supplier_id')
                             ->relationship('supplier', 'name')
                             ->required()
@@ -53,17 +62,12 @@ class OrderResource extends Resource
                             ->createOptionAction(function (Action $action) {
                                 return $action
                                     ->modalHeading('Create supplier')
-                                    ->modalWidth('lg');
+                                    ->modalWidth(\Filament\Support\Enums\MaxWidth::ThreeExtraLarge);
                             }),
 
                         Forms\Components\ToggleButtons::make('status')
                             ->inline()
                             ->options(OrderStatus::class)
-                            ->required(),
-
-                        Forms\Components\DateTimePicker::make('order_date')
-                            ->default(now())
-                            ->disabled()
                             ->required(),
 
                         Forms\Components\RichEditor::make('notes')
@@ -86,11 +90,10 @@ class OrderResource extends Resource
                         Forms\Components\Fieldset::make('Total price')
                             ->schema([
                                 Forms\Components\TextInput::make('total_price')
-                                    ->numeric()
-                                    ->readOnly()
                                     ->prefix('Rp')
                                     ->hiddenLabel()
                                     ->disabled()
+                                    ->dehydrated()
                                     ->afterStateHydrated(function (Get $get, Set $set) {
                                         self::updateTotal($get, $set);
                                     }),
@@ -170,7 +173,7 @@ class OrderResource extends Resource
                     ->reactive()
                     ->afterStateUpdated(function (Set $set) {
                         $set('qty', 0);
-                        $set('unit_price', null);
+                        $set('unit_price', 0);
                     })
                     ->distinct()
                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
@@ -183,22 +186,24 @@ class OrderResource extends Resource
                     ->label('Quantity')
                     ->numeric()
                     ->default(0)
-                    ->columnSpan([
-                        'md' => 2,
-                    ])
                     ->reactive()
                     ->afterStateUpdated(function (Set $set, Get $get, $state) {
                         $unit_price = Product::find($get('product_id'))?->price ?? 0;
                         $price = $unit_price * $state;
                         $set('unit_price', $price);
                     })
-                    ->required(),
+                    ->minValue(0)
+                    ->required()
+                    ->columnSpan([
+                        'md' => 2,
+                    ]),
 
                 Forms\Components\TextInput::make('unit_price')
                     ->label('Unit Price')
+                    ->default(0)
                     ->disabled()
                     ->dehydrated()
-                    ->numeric()
+                    ->prefix('Rp')
                     ->required()
                     ->columnSpan([
                         'md' => 3,
@@ -243,6 +248,6 @@ class OrderResource extends Resource
             return $totalPrice + ($prices[$product['product_id']] * $product['qty']);
         }, 0);
 
-        $set('total_price', number_format($totalPrice, 2, '.', ''));
+        $set('total_price', number_format($totalPrice, 2, ',', '.'));
     }
 }
