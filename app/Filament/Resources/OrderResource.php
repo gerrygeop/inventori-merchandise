@@ -11,13 +11,15 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\repeater;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Illuminate\Support\Str;
 
 class OrderResource extends Resource
 {
@@ -93,10 +95,10 @@ class OrderResource extends Resource
                                     ->prefix('Rp')
                                     ->hiddenLabel()
                                     ->disabled()
-                                    ->dehydrated()
-                                    ->afterStateHydrated(function (Get $get, Set $set) {
-                                        self::updateTotal($get, $set);
-                                    }),
+                                    ->dehydrated(),
+                                // ->afterStateHydrated(function (Get $get, Set $set) {
+                                //     self::updateTotal($get, $set);
+                                // }),
                             ]),
                     ]),
 
@@ -170,28 +172,95 @@ class OrderResource extends Resource
                     ->label('Product')
                     ->options(Product::query()->pluck('name', 'id'))
                     ->required()
-                    ->reactive()
-                    ->afterStateUpdated(function (Set $set) {
-                        $set('qty', 0);
-                        $set('unit_price', 0);
+                    ->live()
+                    ->afterStateUpdated(function (Set $set, $state) {
+                        $price = Product::find($state)?->price ?? 0;
+                        $set('unit_price', $price);
+                        // $set('qty', 1);
                     })
                     ->distinct()
                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                     ->columnSpan([
                         'md' => 5
                     ])
-                    ->searchable(),
+                    ->searchable()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (Get $get, Set $set, ?string $old, ?string $state) {
+                                if (($get('slug') ?? '') !== Str::slug($old)) {
+                                    return;
+                                }
+                                $set('slug', Str::slug($state));
+                            }),
+
+                        Forms\Components\TextInput::make('slug')
+                            ->disabled()
+                            ->dehydrated()
+                            ->required()
+                            ->maxLength(255)
+                            ->unique(Product::class, 'slug', ignoreRecord: true),
+
+                        Forms\Components\RichEditor::make('description')
+                            ->fileAttachmentsDirectory('products-attachments')
+                            ->columnSpanFull(),
+
+                        Forms\Components\Section::make('Images')
+                            ->schema([
+                                Forms\Components\FileUpload::make('photo_url')
+                                    ->hiddenLabel()
+                                    ->image()
+                                    ->directory('products-images')
+                                    ->columnSpanFull(),
+                            ]),
+
+                        Forms\Components\Section::make('Inventory')
+                            ->schema([
+                                Forms\Components\TextInput::make('sku')
+                                    ->label('SKU (Stock Keeping Unit)')
+                                    ->unique(Product::class, 'sku', ignoreRecord: true)
+                                    ->maxLength(255),
+
+                                Forms\Components\TextInput::make('price')
+                                    ->numeric()
+                                    ->inputMode('decimal')
+                                    ->minValue(0)
+                                    ->prefix('Rp'),
+
+                                Forms\Components\TextInput::make('qty')
+                                    ->required()
+                                    ->label('Quantity')
+                                    ->numeric()
+                                    ->rules(['integer', 'min:0'])
+                                    ->minValue(0)
+                                    ->default(0),
+
+                                Forms\Components\TextInput::make('security_stock')
+                                    ->required()
+                                    ->helperText('The safety stock is the limit stock for your products which alerts you if the product stock will soon be out of stock.')
+                                    ->numeric()
+                                    ->rules(['integer', 'min:0'])
+                                    ->minValue(0)
+                                    ->default(0),
+                            ])
+                            ->columns(2),
+                    ])
+                    ->createOptionAction(function (Action $action) {
+                        return $action
+                            ->modalHeading('Create product')
+                            ->modalWidth(\Filament\Support\Enums\MaxWidth::ThreeExtraLarge);
+                    })
+                    ->createOptionUsing(function (array $data): int {
+                        return Product::create($data)->getKey();
+                    }),
 
                 Forms\Components\TextInput::make('qty')
                     ->label('Quantity')
                     ->numeric()
                     ->default(0)
-                    ->reactive()
-                    ->afterStateUpdated(function (Set $set, Get $get, $state) {
-                        $unit_price = Product::find($get('product_id'))?->price ?? 0;
-                        $price = $unit_price * $state;
-                        $set('unit_price', $price);
-                    })
+                    ->dehydrated()
                     ->minValue(0)
                     ->required()
                     ->columnSpan([
@@ -200,9 +269,8 @@ class OrderResource extends Resource
 
                 Forms\Components\TextInput::make('unit_price')
                     ->label('Unit Price')
-                    ->default(0)
-                    ->disabled()
                     ->dehydrated()
+                    ->live(onBlur: true)
                     ->prefix('Rp')
                     ->required()
                     ->columnSpan([
@@ -240,9 +308,10 @@ class OrderResource extends Resource
 
     public static function updateTotal(Get $get, Set $set)
     {
-        $selectedProducts = collect($get('items'))->filter(fn ($item) => !empty($item['product_id']) && !empty($item['qty']));
+        $selectedProducts = collect($get('items'))->filter(fn ($item) => !empty($item['product_id']) && !empty($item['unit_price']));
 
-        $prices = Product::find($selectedProducts->pluck('product_id'))->pluck('price', 'id');
+        // $prices = Product::find($selectedProducts->pluck('product_id'))->pluck('price', 'id');
+        $prices = $selectedProducts->pluck('unit_price', 'product_id');
 
         $totalPrice = $selectedProducts->reduce(function ($totalPrice, $product) use ($prices) {
             return $totalPrice + ($prices[$product['product_id']] * $product['qty']);
