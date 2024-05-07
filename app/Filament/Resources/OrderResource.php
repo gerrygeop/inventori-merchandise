@@ -35,9 +35,6 @@ class OrderResource extends Resource
                     ->schema([
                         Forms\Components\DateTimePicker::make('order_date')
                             ->default(now())
-                            ->hidden()
-                            ->disabled()
-                            ->dehydrated(false)
                             ->timezone('Asia/Singapore')
                             ->required()
                             ->columnSpanFull(),
@@ -116,7 +113,7 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->numeric()
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('order_date')
                     ->dateTime()
@@ -317,6 +314,6 @@ class OrderResource extends Resource
             return $totalPrice + ($prices[$product['product_id']] * $product['qty']);
         }, 0);
 
-        $set('total_price', number_format($totalPrice, 2, ',', '.'));
+        $set('total_price', $totalPrice);
     }
 }

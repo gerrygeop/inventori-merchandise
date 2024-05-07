@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
             $table->decimal('total_price', 12, 2)->nullable();
-            $table->integer('status')->default(0); // ['new', 'processing', 'shipped', 'delivered', 'cancelled']
+            $table->string('status')->default(OrderStatus::New); // ['new', 'processing', 'shipped', 'delivered', 'cancelled']
             $table->timestamp('order_date');
             $table->text('notes')->nullable();
             $table->timestamps();
