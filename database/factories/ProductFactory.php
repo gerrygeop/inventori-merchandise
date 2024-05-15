@@ -21,7 +21,7 @@ class ProductFactory extends Factory
         return [
             'name' => $name,
             'slug' => str()->slug($name),
-            'sku' => fake()->ean8(),
+            // 'sku' => fake()->ean8(),
             'description' => fake()->paragraph(),
             'qty' => fake()->numberBetween(0, 100),
             'security_stock' => 5,

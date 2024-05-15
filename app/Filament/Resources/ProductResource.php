@@ -65,10 +65,10 @@ class ProductResource extends Resource
 
                 Forms\Components\Section::make('Inventory')
                     ->schema([
-                        Forms\Components\TextInput::make('sku')
-                            ->label('SKU (Stock Keeping Unit)')
-                            ->unique(Product::class, 'sku', ignoreRecord: true)
-                            ->maxLength(255),
+                        // Forms\Components\TextInput::make('sku')
+                        //     ->label('SKU (Stock Keeping Unit)')
+                        //     ->unique(Product::class, 'sku', ignoreRecord: true)
+                        //     ->maxLength(255),
 
                         Forms\Components\TextInput::make('price')
                             ->numeric()
@@ -76,17 +76,17 @@ class ProductResource extends Resource
                             ->minValue(0)
                             ->prefix('Rp'),
 
-                        Forms\Components\TextInput::make('qty')
+                        Forms\Components\TextInput::make('security_stock')
                             ->required()
-                            ->label('Quantity')
+                            // ->helperText('The safety stock is the limit stock for your products which alerts you if the product stock will soon be out of stock.')
                             ->numeric()
                             ->rules(['integer', 'min:0'])
                             ->minValue(0)
                             ->default(0),
 
-                        Forms\Components\TextInput::make('security_stock')
+                        Forms\Components\TextInput::make('qty')
                             ->required()
-                            ->helperText('The safety stock is the limit stock for your products which alerts you if the product stock will soon be out of stock.')
+                            ->label('Quantity')
                             ->numeric()
                             ->rules(['integer', 'min:0'])
                             ->minValue(0)
@@ -111,18 +111,18 @@ class ProductResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('sku')
-                    ->label('SKU')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                // Tables\Columns\TextColumn::make('sku')
+                //     ->label('SKU')
+                //     ->searchable()
+                //     ->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('qty')
-                    ->label('Quantity')
+                Tables\Columns\TextColumn::make('security_stock')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('security_stock')
+                Tables\Columns\TextColumn::make('qty')
+                    ->label('Quantity')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
