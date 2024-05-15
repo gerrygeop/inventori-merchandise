@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
+use App\Models\Product;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -15,5 +16,16 @@ class EditOrder extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        $items = $this->record->items;
+
+        foreach ($items as $item) {
+            $product = Product::find($item->product_id);
+            $product->qty = $product->security_stock - $item->qty;
+            $product->save();
+        }
     }
 }
