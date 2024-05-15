@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
+            // $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
             $table->decimal('total_price', 12, 2)->nullable();
             $table->string('status')->default(OrderStatus::New); // ['new', 'processing', 'shipped', 'delivered', 'cancelled']
             $table->timestamp('order_date');

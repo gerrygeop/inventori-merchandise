@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug');
-            $table->string('sku')->nullable();
+            // $table->string('sku')->nullable();
             $table->longText('description')->nullable();
             $table->unsignedBigInteger('qty')->default(0);
             $table->unsignedBigInteger('security_stock')->default(0);
