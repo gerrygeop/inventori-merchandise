@@ -40,8 +40,8 @@ class OrderResource extends Resource
                             ->required()
                             ->columnSpanFull(),
 
-                        Forms\Components\Select::make('supplier_id')
-                            ->relationship('supplier', 'name')
+                        Forms\Components\Select::make('customer_id')
+                            ->relationship('customer', 'name')
                             ->required()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')
@@ -57,11 +57,11 @@ class OrderResource extends Resource
                                     ->columnSpanFull(),
 
                                 Forms\Components\RichEditor::make('description')
-                                    ->fileAttachmentsDirectory('suppliers-attachments'),
+                                    ->fileAttachmentsDirectory('customers-attachments'),
                             ])
                             ->createOptionAction(function (Action $action) {
                                 return $action
-                                    ->modalHeading('Create supplier')
+                                    ->modalHeading('Create customer')
                                     ->modalWidth(\Filament\Support\Enums\MaxWidth::ThreeExtraLarge);
                             }),
 
@@ -94,9 +94,6 @@ class OrderResource extends Resource
                                     ->hiddenLabel()
                                     ->disabled()
                                     ->dehydrated(),
-                                // ->afterStateHydrated(function (Get $get, Set $set) {
-                                //     self::updateTotal($get, $set);
-                                // }),
                             ]),
                     ]),
 
@@ -107,7 +104,7 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('supplier.name')
+                Tables\Columns\TextColumn::make('customer.name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_price')
@@ -115,6 +112,14 @@ class OrderResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'new' => 'info',
+                        'processing' => 'warning',
+                        'shipped' => 'success',
+                        'delivered' => 'success',
+                        'cancelled' => 'danger',
+                    })
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('order_date')
                     ->dateTime()
@@ -174,7 +179,6 @@ class OrderResource extends Resource
                     ->afterStateUpdated(function (Set $set, $state) {
                         $price = Product::find($state)?->price ?? 0;
                         $set('unit_price', $price);
-                        // $set('qty', 1);
                     })
                     ->distinct()
                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
@@ -216,11 +220,6 @@ class OrderResource extends Resource
 
                         Forms\Components\Section::make('Inventory')
                             ->schema([
-                                Forms\Components\TextInput::make('sku')
-                                    ->label('SKU (Stock Keeping Unit)')
-                                    ->unique(Product::class, 'sku', ignoreRecord: true)
-                                    ->maxLength(255),
-
                                 Forms\Components\TextInput::make('price')
                                     ->numeric()
                                     ->inputMode('decimal')

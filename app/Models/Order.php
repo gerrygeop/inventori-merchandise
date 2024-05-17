@@ -13,9 +13,9 @@ class Order extends Model
 
     protected $guarded = ['id'];
 
-    public function supplier(): BelongsTo
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function items(): HasMany
