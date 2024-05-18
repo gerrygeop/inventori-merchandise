@@ -34,12 +34,6 @@ class OrderResource extends Resource
             ->schema([
                 Forms\Components\Section::make()
                     ->schema([
-                        Forms\Components\DateTimePicker::make('order_date')
-                            ->default(now())
-                            ->timezone('Asia/Singapore')
-                            ->required()
-                            ->columnSpanFull(),
-
                         Forms\Components\Select::make('customer_id')
                             ->relationship('customer', 'name')
                             ->required()
@@ -120,9 +114,6 @@ class OrderResource extends Resource
                         'cancelled' => 'danger',
                     })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('order_date')
-                    ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

@@ -17,7 +17,6 @@ return new class extends Migration
             // $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
             $table->decimal('total_price', 12, 2)->nullable();
             $table->string('status')->default(OrderStatus::New); // ['new', 'processing', 'shipped', 'delivered', 'cancelled']
-            $table->timestamp('order_date');
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
