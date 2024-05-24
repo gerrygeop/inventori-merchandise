@@ -99,7 +99,7 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->numeric()
+                    ->label('Customer')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_price')
                     ->numeric()
@@ -302,7 +302,10 @@ class OrderResource extends Resource
         $prices = $selectedProducts->pluck('unit_price', 'product_id');
 
         $totalPrice = $selectedProducts->reduce(function ($totalPrice, $product) use ($prices) {
-            return $totalPrice + ($prices[$product['product_id']] * $product['qty']);
+            $productPrice = (int)$prices[$product['product_id']];
+            $productQty = (int)$product['qty'];
+
+            return $totalPrice + ($productPrice * $productQty);
         }, 0);
 
         $set('total_price', $totalPrice);

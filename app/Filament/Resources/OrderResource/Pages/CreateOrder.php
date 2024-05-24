@@ -17,8 +17,12 @@ class CreateOrder extends CreateRecord
 
         foreach ($items as $item) {
             $product = Product::find($item->product_id);
-            $product->qty = $product->security_stock - $item->qty;
+            $product->qty = $product->qty - $item->qty;
             $product->save();
+
+            // Simpan jumlah asli yang dipesan
+            $item->original_qty = $item->qty;
+            $item->save();
         }
     }
 }

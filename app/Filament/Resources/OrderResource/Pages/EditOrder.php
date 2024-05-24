@@ -24,8 +24,18 @@ class EditOrder extends EditRecord
 
         foreach ($items as $item) {
             $product = Product::find($item->product_id);
-            $product->qty = $product->security_stock - $item->qty;
+            // Kembalikan stok produk ke nilai sebelum perubahan
+            if ($item->original_qty !== null) {
+                $product->qty = $product->qty + $item->original_qty;
+            }
+
+            // Kurangi stok produk dengan jumlah baru yang dipesan
+            $product->qty = $product->qty - $item->qty;
             $product->save();
+
+            // Update jumlah asli yang dipesan
+            $item->original_qty = $item->qty;
+            $item->save();
         }
     }
 }
