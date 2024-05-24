@@ -18,8 +18,7 @@ class OrderExporter extends Exporter
                 ->label('ID'),
             ExportColumn::make('created_at')
                 ->label('Order date'),
-            ExportColumn::make('customer.name')
-                ->label('Customer'),
+            ExportColumn::make('customer.name'),
             ExportColumn::make('total_price'),
             ExportColumn::make('status'),
             ExportColumn::make('notes'),
